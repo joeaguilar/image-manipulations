@@ -156,7 +156,7 @@ simple_3d = function (chunk, opts) {
   The idea is that you have 3 copies of the image,
   the image is poisson blended with the effect, 
   then poisson blended back with the original image 
-  to ragain the original color
+  to regain the original color
 
   */
 
