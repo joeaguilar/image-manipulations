@@ -32,7 +32,7 @@ simple_3d = function (chunk, opts) {
   */
   var options = opts || {};
   // defaults
-  opts.draw = opts.draw || { xspace: 10, yspace:1, weight: 5, stroke: 5 };
+  opts.draw = opts.draw || { xspace: 10, yspace:10, weight: 5 };
   opts.render = "source-poisson-subtract";
   var xspace = opts.draw.xspace, 
       yspace = opts.draw.yspace,
@@ -41,7 +41,6 @@ simple_3d = function (chunk, opts) {
   var h = opts.size.height, w = opts.size.width;
 
   var x, y;
-  var rgb = "r";
 
   // These are good default numbers
   if (xspace < 10) xspace = 10; 
@@ -78,31 +77,36 @@ simple_3d = function (chunk, opts) {
     return m;
   }
 
-
-  var data = new Uint32Array(chunk.buffer);
-  var clone = new Uint32Array(data.length);
-  var dupBuffer = new Uint8Array(clone.buffer);
-  var length = data.length;
+  // reference to chunk, not a copy, 
+  // same idea as a union in C
+  var pixels = new Uint32Array(chunk.buffer);
+  var length = pixels.length; 
+  // create an empty array
+  var drawTo = new Uint32Array(length);
+  // create a Uint8 reference to the empty array
+  var dupBuffer = new Uint8Array(drawTo.buffer);
+  
+  // check once, saves cpu cycles :D
   var isLittleEndian = isLSB();
 
-  if (isLittleEndian) { // check once, saves cpu cycles :D
+  if (isLittleEndian) { 
     for (var x = 0; x < h; x+= (xspace+weight)  ) {
       for (var y = 0; y < w; y+=(yspace+weight)  ) {
         var index = x * w +y;
-        var col = data[index];
+        var col = pixels[index];
         var chan = extractBrightnessLSB(col);
 
         // draw
         for (dz = 0; dz < weight; dz++) {
           for (dx = 0; dx < xspace; dx++) {
             for (dy = 0; dy < yspace; dy++) {
-              // console.log(dz)
+              // clamped between 0 - 255
               var nchan = Math.max(0, Math.min(255, Math.round(chan*dz)));
               col =  (255 << 24) | (  nchan << 16) | (  nchan <<  8) | nchan;
               
               var step = index + ((dx * w + dy) + ( (dz * w) + dz) );
 
-              clone[step] = col;
+              drawTo[step] = col;
               
             }
           }
@@ -113,20 +117,20 @@ simple_3d = function (chunk, opts) {
     for (var x = 0; x < h; x+= (xspace+weight)  ) {
       for (var y = 0; y < w; y+=(yspace+weight)  ) {
         var index = x * w +y;
-        var col = data[index];
+        var col = pixels[index];
         var chan = extractBrightnessMSB(col);
 
         // draw
         for (dz = 0; dz < weight; dz++) {
           for (dx = 0; dx < xspace; dx++) {
             for (dy = 0; dy < yspace; dy++) {
-              // console.log(dz)
+              // clamped between 0 - 255
               var nchan = Math.max(0, Math.min(255, Math.round(chan*dz)));
               col =  (nchan << 24) | (  nchan << 16) | (  nchan <<  8) | 255;
               
               var step = index + ((dx * w + dy) + ( (dz * w) + dz) );
 
-              clone[step] = col;
+              drawTo[step] = col;
               
             }
           }
