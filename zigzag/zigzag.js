@@ -130,7 +130,7 @@ function handleImage (e) {
         var img = new Image();
         // console.log("image created!", img);
         img.onload = function makeLikeAPanda() {
-            
+            // Teisu Darusen's zig zag algorithm
             var canvas = document.querySelector('#panada-bruh');
             var ctx = canvas.getContext('2d');
             var barwidthValue  = parseInt(document.querySelector('#barwidth').value, 10);
