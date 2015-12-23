@@ -4,7 +4,14 @@ simple_3d = function (chunk, opts) {
   // type: draw
 
   /*
-  
+
+  Chunk is assumed to be a Uint8Array containing the images
+  pixels in RGBA format. This is what you get returned when you 
+  do 
+  var canvasContext = canavs.getContext('2d');
+  var imageData = canvasContext.getImageData(0,0, width, height);
+  var data = imageData.data // << Thats the Uint8Array
+
   This function expects an options object that looks like this
     {
       size: {
